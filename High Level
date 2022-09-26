@@ -1,1 +1,71 @@
+import math
 
+def extendedGCD(a, b):
+
+#This part is copied from the internet
+#https://www.educative.io/answers/what-is-extended-euclidean-algorithm
+
+
+
+    if a == 0: 
+        return b, 0, 1
+            
+    gcd, s1, t1 = extendedGCD(b%a, a)
+
+    s,t = updateCoeff(a,b,s1,t1)
+    
+    return gcd, s, t
+
+def updateCoeff(a,b,s,t):
+    return (t - (b//a) * s, s) 
+
+
+def MonPro(a, b, n, r):
+
+#MonPro function from BB file HIGH SPEED RSA Implemetation
+
+    gcd, s, n_dot = extendedGCD(r, n)       #Finds n_dot to use in calculating m
+    t = a*b                                 
+    m = t * (-n_dot) % r
+    u = (t + m*n)/r
+    if u >= n:
+        return u-n
+        
+    else:
+        return u
+        
+def ModExp(M, e, n):
+#ModExp function from BB file HIGH SPEED RSA Implemetation
+    r = 2           
+    while r < n:                #Used to find a (r = 2 ^ k)  > n
+        r = r**2
+    M_strek = M*r % n           
+    x_strek = 1 * r % n
+    k = len(bin(e)) - 2         #Finds length of e in binary. -2 because bin(e) gives 0b10110...
+    for i in range(k):
+        x_strek =  MonPro(x_strek, x_strek, n, r)
+        if bin(e)[i+2]=='1':                            #+2 because of 0b10110...
+            x_strek = MonPro(M_strek, x_strek, n, r)
+    x = MonPro(x_strek, 1, n, r)
+    return x
+
+M_start = 65                        #Message
+
+def encryption(M, e, n):
+    #Encryption of message M using public key {e, n}
+    C = ModExp(M, e, n)
+    print(C)
+    return C
+
+
+
+def decryption(C, d, n):
+    #Decryption of message M using private key {d, n}
+    M = ModExp(C, d, n)
+    print(M)
+    return M
+
+C = encryption(M_start, 5, 119)
+print((M_start**5) % 119)           #Check
+M = decryption(C, 77, 119)
+print(C**77 % 119)                  #Check
